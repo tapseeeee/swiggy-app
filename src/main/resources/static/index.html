@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Swiggy Clone</title>
+</head>
+<body>
+
+<h1>🍔 Swiggy Clone</h1>
+
+<button onclick="loadFood()">Show Menu</button>
+<ul id="menu"></ul>
+
+<script>
+function loadFood(){
+ fetch("/food")
+ .then(res => res.json())
+ .then(data => {
+   let menu = document.getElementById("menu");
+   menu.innerHTML = "";
+
+   data.forEach(item => {
+     let li = document.createElement("li");
+     li.innerHTML = item.name + " - ₹" + item.price +
+     " <button onclick='orderItem()'>Order</button>";
+     menu.appendChild(li);
+   });
+ });
+}
+
+function orderItem(){
+ fetch("/food/order", {method:"POST"})
+ .then(() => alert("Order placed successfully!"));
+}
+</script>
+
+</body>
+</html>
