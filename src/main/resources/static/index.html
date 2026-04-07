@@ -31,6 +31,7 @@ header {
     background: white;
     padding: 20px;
     height: 100vh;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
 /* CARD */
@@ -54,6 +55,7 @@ button {
     padding: 6px 10px;
     border-radius: 5px;
     cursor: pointer;
+    margin: 3px;
 }
 
 /* MENU ITEM */
@@ -87,6 +89,7 @@ button {
     <div id="cartItems">No items</div>
     <h4>Total: ₹<span id="total">0</span></h4>
     <button onclick="clearCart()">Clear</button>
+    <button onclick="placeOrder()">Place Order</button>
 </div>
 
 </div>
@@ -214,6 +217,21 @@ function updateCart(){
     }
 
     document.getElementById("total").innerText = total;
+}
+
+/* PLACE ORDER */
+function placeOrder(){
+    if(Object.keys(cart).length === 0){
+        alert("Cart is empty");
+        return;
+    }
+
+    fetch("/food/order",{method:"POST"})
+    .then(()=>{
+        alert("Order placed successfully!");
+        cart = {};
+        updateCart();
+    });
 }
 
 /* INIT */
