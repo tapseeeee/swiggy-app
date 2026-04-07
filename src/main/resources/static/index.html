@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Swiggy Clone</title>
+<title>QuickBite - Food Delivery</title>
 
 <style>
 body {
@@ -18,6 +18,20 @@ header {
     font-weight: bold;
 }
 
+.hero {
+    background: linear-gradient(135deg, #fc8019, #b3541e);
+    color: white;
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.search-box {
+    padding: 10px;
+    width: 50%;
+    border-radius: 8px;
+    border: none;
+}
+
 .container {
     display: flex;
 }
@@ -25,13 +39,16 @@ header {
 .menu {
     width: 70%;
     padding: 20px;
+    height: 80vh;
+    overflow-y: auto;
 }
 
 .cart {
     width: 30%;
     background: white;
     padding: 20px;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    height: 80vh;
+    overflow-y: auto;
 }
 
 .grid {
@@ -44,12 +61,7 @@ header {
     background: white;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    transition: 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-5px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
 }
 
 .card img {
@@ -75,16 +87,33 @@ button {
     cursor: pointer;
 }
 
-.qty button {
-    margin: 0 3px;
+/* MOBILE */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    .menu, .cart {
+        width: 100%;
+        height: auto;
+    }
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    .search-box {
+        width: 90%;
+    }
 }
-
 </style>
 </head>
 
 <body>
 
-<header>🍔 Swiggy Clone</header>
+<header>🍔 QuickBite</header>
+
+<div class="hero">
+    <h1>Food Delivery</h1>
+    <input type="text" id="search" class="search-box" placeholder="Search food..." onkeyup="filterFood()">
+</div>
 
 <div class="container">
 
@@ -105,36 +134,71 @@ button {
 <script>
 
 let cart = {};
+let foodData = [];
 
+const restaurants = {
+  Pizza: "Pizza Hub",
+  Burger: "Burger Palace",
+  Fries: "Snack Corner",
+  Pasta: "Italiano",
+  Sandwich: "Quick Bites",
+  Noodles: "Asian Delight",
+  Biryani: "Hyderabadi House",
+  IceCream: "Sweet Treats"
+};
+
+/* SAFE IMAGES */
 const images = {
-  Pizza: "https://images.unsplash.com/photo-1601924582975-7e8b1c4f1b3b",
-  Burger: "https://images.unsplash.com/photo-1550547660-d9450f859349",
-  Fries: "https://images.unsplash.com/photo-1585238342028-4d6d7f1e5c1d"
+  Pizza: "https://via.placeholder.com/300?text=Pizza",
+  Burger: "https://via.placeholder.com/300?text=Burger",
+  Fries: "https://via.placeholder.com/300?text=Fries",
+  Pasta: "https://via.placeholder.com/300?text=Pasta",
+  Sandwich: "https://via.placeholder.com/300?text=Sandwich",
+  Noodles: "https://via.placeholder.com/300?text=Noodles",
+  Biryani: "https://via.placeholder.com/300?text=Biryani",
+  IceCream: "https://via.placeholder.com/300?text=IceCream"
 };
 
 function loadFood(){
  fetch("/food")
  .then(res=>res.json())
  .then(data=>{
-   let menu=document.getElementById("menu");
-   menu.innerHTML="";
-
-   data.forEach(item=>{
-     let div=document.createElement("div");
-     div.className="card";
-
-     div.innerHTML=`
-        <img src="${images[item.name]}" />
-        <div class="card-body">
-            <b>${item.name}</b><br>
-            <span class="price">₹${item.price}</span><br><br>
-            <button onclick="add('${item.name}', ${item.price})">Add</button>
-        </div>
-     `;
-
-     menu.appendChild(div);
-   });
+   foodData = data;
+   displayFood(data);
  });
+}
+
+function displayFood(data){
+ let menu=document.getElementById("menu");
+ menu.innerHTML="";
+
+ data.forEach(item=>{
+   let div=document.createElement("div");
+   div.className="card";
+
+   div.innerHTML=`
+    <img src="${images[item.name]}" />
+    <div class="card-body">
+        <small>${restaurants[item.name]}</small><br>
+        <b>${item.name}</b><br>
+        ⭐ 4.${Math.floor(Math.random()*9)}<br>
+        <span class="price">₹${item.price}</span><br><br>
+        <button onclick="add('${item.name}', ${item.price})">Add</button>
+    </div>
+   `;
+
+   menu.appendChild(div);
+ });
+}
+
+function filterFood(){
+ let search=document.getElementById("search").value.toLowerCase();
+
+ let filtered = foodData.filter(item => 
+   item.name.toLowerCase().includes(search)
+ );
+
+ displayFood(filtered);
 }
 
 function add(name, price){
@@ -154,7 +218,7 @@ function updateCart(){
  cartDiv.innerHTML="";
  let total=0;
 
- if(Object.keys(cart).length === 0){
+ if(Object.keys(cart).length===0){
    cartDiv.innerHTML="No items";
  }
 
@@ -174,7 +238,7 @@ function updateCart(){
 }
 
 function placeOrder(){
- if(Object.keys(cart).length === 0){
+ if(Object.keys(cart).length===0){
    alert("Cart is empty");
    return;
  }
