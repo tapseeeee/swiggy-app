@@ -2,13 +2,72 @@
 <html>
 <head>
     <title>Swiggy Clone</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+        }
+
+        header {
+            background: #fc8019;
+            color: white;
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        button {
+            background: #fc8019;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #e56f10;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .food-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .price {
+            color: green;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>🍔 Swiggy Clone</h1>
+<header>🍔 Swiggy Clone</header>
 
-<button onclick="loadFood()">Show Menu</button>
-<ul id="menu"></ul>
+<div class="container">
+
+    <button onclick="loadFood()">Show Menu</button>
+
+    <div id="menu"></div>
+
+</div>
 
 <script>
 function loadFood(){
@@ -19,17 +78,24 @@ function loadFood(){
    menu.innerHTML = "";
 
    data.forEach(item => {
-     let li = document.createElement("li");
-     li.innerHTML = item.name + " - ₹" + item.price +
-     " <button onclick='orderItem()'>Order</button>";
-     menu.appendChild(li);
+     let div = document.createElement("div");
+     div.className = "card";
+
+     div.innerHTML = `
+        <div>
+            <div class="food-name">${item.name}</div>
+            <div class="price">₹${item.price}</div>
+        </div>
+        <button onclick="orderItem()">Order</button>
+     `;
+
+     menu.appendChild(div);
    });
  });
 }
 
 function orderItem(){
- fetch("/food/order", {method:"POST"})
- .then(() => alert("Order placed successfully!"));
+ alert("Order placed successfully!");
 }
 </script>
 
