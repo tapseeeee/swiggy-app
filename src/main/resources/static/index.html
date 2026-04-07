@@ -34,19 +34,36 @@ header {
     box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
 .card {
     background: white;
-    padding: 15px;
-    margin: 10px 0;
     border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     transition: 0.2s;
 }
 
 .card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
+}
+
+.card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 10px;
+}
+
+.price {
+    color: green;
 }
 
 button {
@@ -54,13 +71,12 @@ button {
     color: white;
     border: none;
     padding: 6px 10px;
-    cursor: pointer;
     border-radius: 5px;
+    cursor: pointer;
 }
 
-.qty {
-    display: flex;
-    gap: 5px;
+.qty button {
+    margin: 0 3px;
 }
 
 </style>
@@ -74,12 +90,12 @@ button {
 
 <div class="menu">
     <button onclick="loadFood()">Show Menu</button>
-    <div id="menu"></div>
+    <div id="menu" class="grid"></div>
 </div>
 
 <div class="cart">
     <h3>🛒 Cart</h3>
-    <div id="cartItems"></div>
+    <div id="cartItems">No items</div>
     <h4>Total: ₹<span id="total">0</span></h4>
     <button onclick="placeOrder()">Place Order</button>
 </div>
@@ -89,6 +105,12 @@ button {
 <script>
 
 let cart = {};
+
+const images = {
+  Pizza: "https://images.unsplash.com/photo-1601924582975-7e8b1c4f1b3b",
+  Burger: "https://images.unsplash.com/photo-1550547660-d9450f859349",
+  Fries: "https://images.unsplash.com/photo-1585238342028-4d6d7f1e5c1d"
+};
 
 function loadFood(){
  fetch("/food")
@@ -102,12 +124,11 @@ function loadFood(){
      div.className="card";
 
      div.innerHTML=`
-        <div>
+        <img src="${images[item.name]}" />
+        <div class="card-body">
             <b>${item.name}</b><br>
-            ₹${item.price}
-        </div>
-        <div class="qty">
-            <button onclick="add('${item.name}', ${item.price})">+</button>
+            <span class="price">₹${item.price}</span><br><br>
+            <button onclick="add('${item.name}', ${item.price})">Add</button>
         </div>
      `;
 
@@ -133,6 +154,10 @@ function updateCart(){
  cartDiv.innerHTML="";
  let total=0;
 
+ if(Object.keys(cart).length === 0){
+   cartDiv.innerHTML="No items";
+ }
+
  for(let item in cart){
    let div=document.createElement("div");
    div.innerHTML=`
@@ -142,14 +167,14 @@ function updateCart(){
    `;
    cartDiv.appendChild(div);
 
-   total+=cart[item].qty*cart[item].price;
+   total += cart[item].qty * cart[item].price;
  }
 
- document.getElementById("total").innerText=total;
+ document.getElementById("total").innerText = total;
 }
 
 function placeOrder(){
- if(Object.keys(cart).length===0){
+ if(Object.keys(cart).length === 0){
    alert("Cart is empty");
    return;
  }
@@ -157,7 +182,7 @@ function placeOrder(){
  fetch("/food/order",{method:"POST"})
  .then(()=>{
    alert("Order placed successfully!");
-   cart={};
+   cart = {};
    updateCart();
  });
 }
