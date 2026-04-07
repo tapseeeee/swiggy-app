@@ -44,6 +44,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+
+            /* Animation */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #eee;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
 
         .food-name {
@@ -53,6 +62,21 @@
 
         .price {
             color: green;
+        }
+
+        .order-btn {
+            background-color: #fc8019;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .order-btn:hover {
+            background-color: #e56f10;
         }
     </style>
 </head>
@@ -86,7 +110,7 @@ function loadFood(){
             <div class="food-name">${item.name}</div>
             <div class="price">₹${item.price}</div>
         </div>
-        <button onclick="orderItem()">Order</button>
+        <button class="order-btn" onclick="orderItem()">Order</button>
      `;
 
      menu.appendChild(div);
@@ -95,7 +119,8 @@ function loadFood(){
 }
 
 function orderItem(){
- alert("Order placed successfully!");
+ fetch("/food/order", {method:"POST"})
+ .then(() => alert("Order placed successfully!"));
 }
 </script>
 
