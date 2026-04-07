@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Food Delivery App</title>
+<title>QuickBite - Food Delivery</title>
+
 <style>
 body {
     font-family: Arial;
@@ -10,57 +10,124 @@ body {
     background: #f5f5f5;
 }
 
+/* HEADER */
 header {
-    background: #ff4d4d;
+    background: #fc8019;
     color: white;
     padding: 15px;
+    font-size: 22px;
+    font-weight: bold;
     display: flex;
     justify-content: space-between;
 }
 
-button {
-    cursor: pointer;
-}
-
-.container {
-    padding: 20px;
-}
-
-.restaurant {
+/* CART COUNT */
+.cart-count {
     background: white;
-    padding: 15px;
-    margin: 15px;
-    border-radius: 10px;
-    width: 250px;
-    display: inline-block;
-    vertical-align: top;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    color: #fc8019;
+    padding: 3px 8px;
+    border-radius: 50%;
+    font-size: 14px;
 }
 
-.restaurant img {
-    width: 100%;
-    border-radius: 10px;
+/* HERO */
+.hero {
+    background: linear-gradient(135deg, #fc8019, #b3541e);
+    color: white;
+    padding: 50px 20px;
+    text-align: center;
 }
 
-.menu-item {
+.search-box {
+    padding: 10px;
+    width: 50%;
+    border-radius: 8px;
+    border: none;
+}
+
+/* LAYOUT */
+.container {
     display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
+}
+
+.menu {
+    width: 70%;
+    padding: 20px;
+    height: 80vh;
+    overflow-y: auto;
 }
 
 .cart {
-    position: fixed;
-    right: 0;
-    top: 70px;
-    width: 250px;
+    width: 30%;
     background: white;
-    padding: 15px;
-    height: 100%;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+    padding: 20px;
+    height: 80vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
-.hidden {
-    display: none;
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+/* CARD */
+.card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 10px;
+}
+
+.price {
+    color: green;
+}
+
+/* BUTTON */
+button {
+    background: #fc8019;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 2px;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    .menu, .cart {
+        width: 100%;
+        height: auto;
+    }
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    .search-box {
+        width: 90%;
+    }
 }
 </style>
 </head>
@@ -68,148 +135,182 @@ button {
 <body>
 
 <header>
-    <h2>Food Delivery</h2>
-    <div>
-        <button onclick="login()">Login</button>
-        <button onclick="logout()">Logout</button>
-    </div>
+🍔 QuickBite 
+<span>Cart: <span id="count" class="cart-count">0</span></span>
 </header>
 
-<div class="container" id="restaurants"></div>
+<div class="hero">
+    <h1>Food Delivery</h1>
+    <input type="text" id="search" class="search-box" placeholder="Search food..." onkeyup="filterFood()">
+    <br><br>
+    <button onclick="displayFood(foodData)">Show All</button>
+</div>
 
-<div class="container hidden" id="menuSection">
-    <h2 id="restaurantName"></h2>
-    <div id="menu"></div>
+<div class="container">
+
+<div class="menu">
+    <button onclick="loadFood()">Show Menu</button>
+    <div id="menu" class="grid"></div>
 </div>
 
 <div class="cart">
-    <h3>Cart</h3>
-    <div id="cartItems"></div>
-    <h4 id="total"></h4>
-    <button onclick="checkout()">Checkout</button>
+    <h3>🛒 Cart</h3>
+    <div id="cartItems">No items</div>
+    <h4>Total: ₹<span id="total">0</span></h4>
+    <button onclick="clearCart()">Clear Cart</button>
+    <button onclick="placeOrder()">Place Order</button>
+</div>
+
 </div>
 
 <script>
-let userLoggedIn = false;
 
-function login() {
-    userLoggedIn = true;
-    alert("Logged in");
+let cart = {};
+let foodData = [];
+
+/* RESTAURANTS */
+const restaurants = {
+  Pizza: "Pizza Hub",
+  Burger: "Burger Palace",
+  Fries: "Snack Corner",
+  Pasta: "Italiano",
+  Sandwich: "Quick Bites",
+  Noodles: "Asian Delight",
+  Biryani: "Hyderabadi House",
+  IceCream: "Sweet Treats"
+};
+
+/* IMAGES */
+const images = {
+  Pizza: "https://via.placeholder.com/300?text=Pizza",
+  Burger: "https://via.placeholder.com/300?text=Burger",
+  Fries: "https://via.placeholder.com/300?text=Fries",
+  Pasta: "https://via.placeholder.com/300?text=Pasta",
+  Sandwich: "https://via.placeholder.com/300?text=Sandwich",
+  Noodles: "https://via.placeholder.com/300?text=Noodles",
+  Biryani: "https://via.placeholder.com/300?text=Biryani",
+  IceCream: "https://via.placeholder.com/300?text=IceCream"
+};
+
+/* LOAD */
+function loadFood(){
+ fetch("/food")
+ .then(res=>res.json())
+ .then(data=>{
+   foodData = data;
+   displayFood(data);
+ });
 }
 
-function logout() {
-    userLoggedIn = false;
-    alert("Logged out");
+/* DISPLAY */
+function displayFood(data){
+ let menu=document.getElementById("menu");
+ menu.innerHTML="";
+
+ data.forEach(item=>{
+   let div=document.createElement("div");
+   div.className="card";
+
+   div.innerHTML=`
+    <img src="${images[item.name]}" />
+    <div class="card-body">
+        <small onclick="filterRestaurant('${restaurants[item.name]}')" style="cursor:pointer;color:gray;">
+        ${restaurants[item.name]}
+        </small><br>
+
+        <b>${item.name}</b><br>
+
+        ⭐ 4.${Math.floor(Math.random()*9)} 
+        | ⏱ ${20 + Math.floor(Math.random()*15)} mins<br>
+
+        <span class="price">₹${item.price}</span><br><br>
+
+        <button onclick="add('${item.name}', ${item.price})">Add</button>
+    </div>
+   `;
+
+   menu.appendChild(div);
+ });
 }
 
-const restaurants = [
-    {
-        name: "Pizza Palace",
-        img: "https://source.unsplash.com/300x200/?pizza",
-        menu: [
-            {name: "Margherita", price: 200},
-            {name: "Pepperoni", price: 250},
-            {name: "Cheese Burst", price: 300}
-        ]
-    },
-    {
-        name: "Burger Hub",
-        img: "https://source.unsplash.com/300x200/?burger",
-        menu: [
-            {name: "Veg Burger", price: 120},
-            {name: "Chicken Burger", price: 180},
-            {name: "Double Patty", price: 220}
-        ]
-    },
-    {
-        name: "Indian Kitchen",
-        img: "https://source.unsplash.com/300x200/?indian-food",
-        menu: [
-            {name: "Paneer Butter Masala", price: 220},
-            {name: "Biryani", price: 250},
-            {name: "Dal Tadka", price: 150}
-        ]
-    }
-];
+/* FILTER */
+function filterFood(){
+ let search=document.getElementById("search").value.toLowerCase();
 
-let cart = [];
+ let filtered = foodData.filter(item => 
+   item.name.toLowerCase().includes(search)
+ );
 
-function loadRestaurants() {
-    let container = document.getElementById("restaurants");
-    container.innerHTML = "";
-
-    restaurants.forEach((res, index) => {
-        container.innerHTML += `
-            <div class="restaurant">
-                <img src="${res.img}">
-                <h3>${res.name}</h3>
-                <button onclick="viewMenu(${index})">View Menu</button>
-            </div>
-        `;
-    });
+ displayFood(filtered);
 }
 
-function viewMenu(index) {
-    let section = document.getElementById("menuSection");
-    section.classList.remove("hidden");
-
-    let res = restaurants[index];
-    document.getElementById("restaurantName").innerText = res.name;
-
-    let menuDiv = document.getElementById("menu");
-    menuDiv.innerHTML = "";
-
-    res.menu.forEach(item => {
-        menuDiv.innerHTML += `
-            <div class="menu-item">
-                <span>${item.name} - ₹${item.price}</span>
-                <button onclick="addToCart('${item.name}', ${item.price})">Add</button>
-            </div>
-        `;
-    });
+function filterRestaurant(name){
+ let filtered = foodData.filter(item => 
+   restaurants[item.name] === name
+ );
+ displayFood(filtered);
 }
 
-function addToCart(name, price) {
-    if (!userLoggedIn) {
-        alert("Login first!");
-        return;
-    }
-
-    cart.push({name, price});
-    renderCart();
+/* CART */
+function add(name, price){
+ if(!cart[name]) cart[name]={qty:0, price:price};
+ cart[name].qty++;
+ updateCart();
 }
 
-function renderCart() {
-    let cartDiv = document.getElementById("cartItems");
-    cartDiv.innerHTML = "";
-
-    let total = 0;
-
-    cart.forEach(item => {
-        cartDiv.innerHTML += `<p>${item.name} - ₹${item.price}</p>`;
-        total += item.price;
-    });
-
-    document.getElementById("total").innerText = "Total: ₹" + total;
+function remove(name){
+ cart[name].qty--;
+ if(cart[name].qty<=0) delete cart[name];
+ updateCart();
 }
 
-function checkout() {
-    if (!userLoggedIn) {
-        alert("Login first!");
-        return;
-    }
-
-    if (cart.length === 0) {
-        alert("Cart empty!");
-        return;
-    }
-
-    alert("Order placed successfully!");
-    cart = [];
-    renderCart();
+function clearCart(){
+ cart = {};
+ updateCart();
 }
 
-loadRestaurants();
+function updateCart(){
+ let cartDiv=document.getElementById("cartItems");
+ cartDiv.innerHTML="";
+ let total=0;
+ let count=0;
+
+ if(Object.keys(cart).length===0){
+   cartDiv.innerHTML="No items";
+ }
+
+ for(let item in cart){
+   let div=document.createElement("div");
+   div.innerHTML=`
+     ${item} x ${cart[item].qty}
+     <button onclick="add('${item}', ${cart[item].price})">+</button>
+     <button onclick="remove('${item}')">-</button>
+   `;
+   cartDiv.appendChild(div);
+
+   total += cart[item].qty * cart[item].price;
+   count += cart[item].qty;
+ }
+
+ document.getElementById("total").innerText = total;
+ document.getElementById("count").innerText = count;
+}
+
+/* ORDER */
+function placeOrder(){
+ if(Object.keys(cart).length===0){
+   alert("Cart is empty");
+   return;
+ }
+
+ fetch("/food/order",{method:"POST"})
+ .then(()=>{
+   alert("Order placed successfully!");
+   cart = {};
+   updateCart();
+ });
+}
+
 </script>
 
 </body>
