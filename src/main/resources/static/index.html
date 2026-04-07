@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>QuickBite - Food Delivery</title>
-
+<meta charset="UTF-8">
+<title>Food Delivery App</title>
 <style>
 body {
     font-family: Arial;
@@ -11,246 +11,205 @@ body {
 }
 
 header {
-    background: #fc8019;
+    background: #ff4d4d;
     color: white;
     padding: 15px;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.hero {
-    background: linear-gradient(135deg, #fc8019, #b3541e);
-    color: white;
-    padding: 50px 20px;
-    text-align: center;
-}
-
-.search-box {
-    padding: 10px;
-    width: 50%;
-    border-radius: 8px;
-    border: none;
-}
-
-.container {
     display: flex;
-}
-
-.menu {
-    width: 70%;
-    padding: 20px;
-    height: 80vh;
-    overflow-y: auto;
-}
-
-.cart {
-    width: 30%;
-    background: white;
-    padding: 20px;
-    height: 80vh;
-    overflow-y: auto;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
-
-.card {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-}
-
-.card img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-}
-
-.card-body {
-    padding: 10px;
-}
-
-.price {
-    color: green;
+    justify-content: space-between;
 }
 
 button {
-    background: #fc8019;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 5px;
     cursor: pointer;
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-    .menu, .cart {
-        width: 100%;
-        height: auto;
-    }
-    .grid {
-        grid-template-columns: 1fr;
-    }
-    .search-box {
-        width: 90%;
-    }
+.container {
+    padding: 20px;
+}
+
+.restaurant {
+    background: white;
+    padding: 15px;
+    margin: 15px;
+    border-radius: 10px;
+    width: 250px;
+    display: inline-block;
+    vertical-align: top;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.restaurant img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.cart {
+    position: fixed;
+    right: 0;
+    top: 70px;
+    width: 250px;
+    background: white;
+    padding: 15px;
+    height: 100%;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+}
+
+.hidden {
+    display: none;
 }
 </style>
 </head>
 
 <body>
 
-<header>🍔 QuickBite</header>
+<header>
+    <h2>Food Delivery</h2>
+    <div>
+        <button onclick="login()">Login</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+</header>
 
-<div class="hero">
-    <h1>Food Delivery</h1>
-    <input type="text" id="search" class="search-box" placeholder="Search food..." onkeyup="filterFood()">
-</div>
+<div class="container" id="restaurants"></div>
 
-<div class="container">
-
-<div class="menu">
-    <button onclick="loadFood()">Show Menu</button>
-    <div id="menu" class="grid"></div>
+<div class="container hidden" id="menuSection">
+    <h2 id="restaurantName"></h2>
+    <div id="menu"></div>
 </div>
 
 <div class="cart">
-    <h3>🛒 Cart</h3>
-    <div id="cartItems">No items</div>
-    <h4>Total: ₹<span id="total">0</span></h4>
-    <button onclick="placeOrder()">Place Order</button>
-</div>
-
+    <h3>Cart</h3>
+    <div id="cartItems"></div>
+    <h4 id="total"></h4>
+    <button onclick="checkout()">Checkout</button>
 </div>
 
 <script>
+let userLoggedIn = false;
 
-let cart = {};
-let foodData = [];
-
-const restaurants = {
-  Pizza: "Pizza Hub",
-  Burger: "Burger Palace",
-  Fries: "Snack Corner",
-  Pasta: "Italiano",
-  Sandwich: "Quick Bites",
-  Noodles: "Asian Delight",
-  Biryani: "Hyderabadi House",
-  IceCream: "Sweet Treats"
-};
-
-/* SAFE IMAGES */
-const images = {
-  Pizza: "https://via.placeholder.com/300?text=Pizza",
-  Burger: "https://via.placeholder.com/300?text=Burger",
-  Fries: "https://via.placeholder.com/300?text=Fries",
-  Pasta: "https://via.placeholder.com/300?text=Pasta",
-  Sandwich: "https://via.placeholder.com/300?text=Sandwich",
-  Noodles: "https://via.placeholder.com/300?text=Noodles",
-  Biryani: "https://via.placeholder.com/300?text=Biryani",
-  IceCream: "https://via.placeholder.com/300?text=IceCream"
-};
-
-function loadFood(){
- fetch("/food")
- .then(res=>res.json())
- .then(data=>{
-   foodData = data;
-   displayFood(data);
- });
+function login() {
+    userLoggedIn = true;
+    alert("Logged in");
 }
 
-function displayFood(data){
- let menu=document.getElementById("menu");
- menu.innerHTML="";
-
- data.forEach(item=>{
-   let div=document.createElement("div");
-   div.className="card";
-
-   div.innerHTML=`
-    <img src="${images[item.name]}" />
-    <div class="card-body">
-        <small>${restaurants[item.name]}</small><br>
-        <b>${item.name}</b><br>
-        ⭐ 4.${Math.floor(Math.random()*9)}<br>
-        <span class="price">₹${item.price}</span><br><br>
-        <button onclick="add('${item.name}', ${item.price})">Add</button>
-    </div>
-   `;
-
-   menu.appendChild(div);
- });
+function logout() {
+    userLoggedIn = false;
+    alert("Logged out");
 }
 
-function filterFood(){
- let search=document.getElementById("search").value.toLowerCase();
+const restaurants = [
+    {
+        name: "Pizza Palace",
+        img: "https://source.unsplash.com/300x200/?pizza",
+        menu: [
+            {name: "Margherita", price: 200},
+            {name: "Pepperoni", price: 250},
+            {name: "Cheese Burst", price: 300}
+        ]
+    },
+    {
+        name: "Burger Hub",
+        img: "https://source.unsplash.com/300x200/?burger",
+        menu: [
+            {name: "Veg Burger", price: 120},
+            {name: "Chicken Burger", price: 180},
+            {name: "Double Patty", price: 220}
+        ]
+    },
+    {
+        name: "Indian Kitchen",
+        img: "https://source.unsplash.com/300x200/?indian-food",
+        menu: [
+            {name: "Paneer Butter Masala", price: 220},
+            {name: "Biryani", price: 250},
+            {name: "Dal Tadka", price: 150}
+        ]
+    }
+];
 
- let filtered = foodData.filter(item => 
-   item.name.toLowerCase().includes(search)
- );
+let cart = [];
 
- displayFood(filtered);
+function loadRestaurants() {
+    let container = document.getElementById("restaurants");
+    container.innerHTML = "";
+
+    restaurants.forEach((res, index) => {
+        container.innerHTML += `
+            <div class="restaurant">
+                <img src="${res.img}">
+                <h3>${res.name}</h3>
+                <button onclick="viewMenu(${index})">View Menu</button>
+            </div>
+        `;
+    });
 }
 
-function add(name, price){
- if(!cart[name]) cart[name]={qty:0, price:price};
- cart[name].qty++;
- updateCart();
+function viewMenu(index) {
+    let section = document.getElementById("menuSection");
+    section.classList.remove("hidden");
+
+    let res = restaurants[index];
+    document.getElementById("restaurantName").innerText = res.name;
+
+    let menuDiv = document.getElementById("menu");
+    menuDiv.innerHTML = "";
+
+    res.menu.forEach(item => {
+        menuDiv.innerHTML += `
+            <div class="menu-item">
+                <span>${item.name} - ₹${item.price}</span>
+                <button onclick="addToCart('${item.name}', ${item.price})">Add</button>
+            </div>
+        `;
+    });
 }
 
-function remove(name){
- cart[name].qty--;
- if(cart[name].qty<=0) delete cart[name];
- updateCart();
+function addToCart(name, price) {
+    if (!userLoggedIn) {
+        alert("Login first!");
+        return;
+    }
+
+    cart.push({name, price});
+    renderCart();
 }
 
-function updateCart(){
- let cartDiv=document.getElementById("cartItems");
- cartDiv.innerHTML="";
- let total=0;
+function renderCart() {
+    let cartDiv = document.getElementById("cartItems");
+    cartDiv.innerHTML = "";
 
- if(Object.keys(cart).length===0){
-   cartDiv.innerHTML="No items";
- }
+    let total = 0;
 
- for(let item in cart){
-   let div=document.createElement("div");
-   div.innerHTML=`
-     ${item} x ${cart[item].qty}
-     <button onclick="add('${item}', ${cart[item].price})">+</button>
-     <button onclick="remove('${item}')">-</button>
-   `;
-   cartDiv.appendChild(div);
+    cart.forEach(item => {
+        cartDiv.innerHTML += `<p>${item.name} - ₹${item.price}</p>`;
+        total += item.price;
+    });
 
-   total += cart[item].qty * cart[item].price;
- }
-
- document.getElementById("total").innerText = total;
+    document.getElementById("total").innerText = "Total: ₹" + total;
 }
 
-function placeOrder(){
- if(Object.keys(cart).length===0){
-   alert("Cart is empty");
-   return;
- }
+function checkout() {
+    if (!userLoggedIn) {
+        alert("Login first!");
+        return;
+    }
 
- fetch("/food/order",{method:"POST"})
- .then(()=>{
-   alert("Order placed successfully!");
-   cart = {};
-   updateCart();
- });
+    if (cart.length === 0) {
+        alert("Cart empty!");
+        return;
+    }
+
+    alert("Order placed successfully!");
+    cart = [];
+    renderCart();
 }
 
+loadRestaurants();
 </script>
 
 </body>
