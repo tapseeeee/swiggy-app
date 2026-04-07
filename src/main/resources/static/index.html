@@ -1,84 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Swiggy Clone</title>
+<title>Swiggy Clone</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            margin: 0;
-        }
+<style>
+body {
+    font-family: Arial;
+    margin: 0;
+    background: #f5f5f5;
+}
 
-        header {
-            background: #fc8019;
-            color: white;
-            padding: 15px;
-            font-size: 24px;
-            font-weight: bold;
-        }
+header {
+    background: #fc8019;
+    color: white;
+    padding: 15px;
+    font-size: 22px;
+    font-weight: bold;
+}
 
-        .container {
-            padding: 20px;
-        }
+.container {
+    display: flex;
+}
 
-        button {
-            background: #fc8019;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
+.menu {
+    width: 70%;
+    padding: 20px;
+}
 
-        button:hover {
-            background: #e56f10;
-        }
+.cart {
+    width: 30%;
+    background: white;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
 
-        .card {
-            background: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+.card {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.2s;
+}
 
-            /* Animation */
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 1px solid #eee;
-        }
+.card:hover {
+    transform: translateY(-4px);
+}
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        }
+button {
+    background: #fc8019;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
 
-        .food-name {
-            font-weight: bold;
-            font-size: 18px;
-        }
+.qty {
+    display: flex;
+    gap: 5px;
+}
 
-        .price {
-            color: green;
-        }
-
-        .order-btn {
-            background-color: #fc8019;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
-        .order-btn:hover {
-            background-color: #e56f10;
-        }
-    </style>
+</style>
 </head>
 
 <body>
@@ -87,30 +72,43 @@
 
 <div class="container">
 
+<div class="menu">
     <button onclick="loadFood()">Show Menu</button>
-
     <div id="menu"></div>
+</div>
+
+<div class="cart">
+    <h3>🛒 Cart</h3>
+    <div id="cartItems"></div>
+    <h4>Total: ₹<span id="total">0</span></h4>
+    <button onclick="placeOrder()">Place Order</button>
+</div>
 
 </div>
 
 <script>
+
+let cart = {};
+
 function loadFood(){
  fetch("/food")
- .then(res => res.json())
- .then(data => {
-   let menu = document.getElementById("menu");
-   menu.innerHTML = "";
+ .then(res=>res.json())
+ .then(data=>{
+   let menu=document.getElementById("menu");
+   menu.innerHTML="";
 
-   data.forEach(item => {
-     let div = document.createElement("div");
-     div.className = "card";
+   data.forEach(item=>{
+     let div=document.createElement("div");
+     div.className="card";
 
-     div.innerHTML = `
+     div.innerHTML=`
         <div>
-            <div class="food-name">${item.name}</div>
-            <div class="price">₹${item.price}</div>
+            <b>${item.name}</b><br>
+            ₹${item.price}
         </div>
-        <button class="order-btn" onclick="orderItem()">Order</button>
+        <div class="qty">
+            <button onclick="add('${item.name}', ${item.price})">+</button>
+        </div>
      `;
 
      menu.appendChild(div);
@@ -118,10 +116,52 @@ function loadFood(){
  });
 }
 
-function orderItem(){
- fetch("/food/order", {method:"POST"})
- .then(() => alert("Order placed successfully!"));
+function add(name, price){
+ if(!cart[name]) cart[name]={qty:0, price:price};
+ cart[name].qty++;
+ updateCart();
 }
+
+function remove(name){
+ cart[name].qty--;
+ if(cart[name].qty<=0) delete cart[name];
+ updateCart();
+}
+
+function updateCart(){
+ let cartDiv=document.getElementById("cartItems");
+ cartDiv.innerHTML="";
+ let total=0;
+
+ for(let item in cart){
+   let div=document.createElement("div");
+   div.innerHTML=`
+     ${item} x ${cart[item].qty}
+     <button onclick="add('${item}', ${cart[item].price})">+</button>
+     <button onclick="remove('${item}')">-</button>
+   `;
+   cartDiv.appendChild(div);
+
+   total+=cart[item].qty*cart[item].price;
+ }
+
+ document.getElementById("total").innerText=total;
+}
+
+function placeOrder(){
+ if(Object.keys(cart).length===0){
+   alert("Cart is empty");
+   return;
+ }
+
+ fetch("/food/order",{method:"POST"})
+ .then(()=>{
+   alert("Order placed successfully!");
+   cart={};
+   updateCart();
+ });
+}
+
 </script>
 
 </body>
