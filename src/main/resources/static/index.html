@@ -1,102 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>QuickBite Pro+</title>
+<title>QuickBite Pro</title>
 
 <style>
+:root {
+    --bg: #121212;
+    --card: #1e1e1e;
+    --text: white;
+    --primary: #fc8019;
+}
+
+.light {
+    --bg: #ffffff;
+    --card: #f5f5f5;
+    --text: black;
+}
+
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg,#0f0f0f,#1c1c1c);
-    color: white;
+    background: var(--bg);
+    color: var(--text);
 }
 
 /* HEADER */
 header {
-    background: #fc8019;
-    padding: 15px 20px;
+    background: var(--primary);
+    padding: 15px;
+    font-size: 22px;
     display: flex;
     justify-content: space-between;
-}
-
-/* LOGIN */
-.login {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-.login-box {
-    background: #1e1e1e;
-    padding: 30px;
-    border-radius: 10px;
 }
 
 /* LAYOUT */
 .container { display: flex; }
 
 .left { width: 70%; padding: 20px; }
-.right { width: 30%; padding: 20px; background:#1a1a1a; }
+
+.right {
+    width: 30%;
+    background: var(--card);
+    padding: 20px;
+}
 
 /* CARD */
 .card {
-    background:#222;
-    padding:15px;
-    margin:10px 0;
-    border-radius:10px;
-    cursor:pointer;
+    background: var(--card);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
-.card:hover { background:#2a2a2a; }
+.card:hover { opacity: 0.9; }
 
 /* BUTTON */
 button {
-    background:#fc8019;
-    border:none;
-    padding:6px 10px;
-    color:white;
-    border-radius:6px;
-    cursor:pointer;
+    background: var(--primary);
+    border: none;
+    padding: 6px 10px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 2px;
 }
 
 /* INPUT */
 input {
-    padding:8px;
-    margin:5px;
-    border-radius:5px;
-    border:none;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
 }
 
-/* STATUS COLORS */
-.preparing { color:orange; }
-.delivered { color:lightgreen; }
+/* STATUS */
+.preparing { color: orange; }
+.out { color: goldenrod; }
+.delivered { color: green; }
 
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginPage" class="login">
-    <div class="login-box">
-        <h2>Login</h2>
-        <input id="username" placeholder="Enter Name"><br>
-        <button onclick="login()">Enter App</button>
-    </div>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:none">
-
 <header>
-    <span>🍔 QuickBite Pro+</span>
-    <span id="user"></span>
+🍔 QuickBite Pro
+<button onclick="toggleTheme()">🌓</button>
 </header>
 
 <div class="container">
 
-<div class="left" id="restaurants"></div>
+<div class="left">
+
+<h2>Explore</h2>
+
+<input id="search" placeholder="Search restaurants..." onkeyup="filterRestaurants()">
+
+<div>
+<button onclick="setCategory('All')">All</button>
+<button onclick="setCategory('Pizza')">Pizza</button>
+<button onclick="setCategory('Burger')">Burger</button>
+<button onclick="setCategory('Indian')">Indian</button>
+<button onclick="setCategory('Chinese')">Chinese</button>
+<button onclick="setCategory('Cafe')">Cafe</button>
+<button onclick="setCategory('Dessert')">Dessert</button>
+</div>
+
+<div id="restaurants"></div>
+
+</div>
 
 <div class="left" id="menuSection" style="display:none;">
     <h2 id="resName"></h2>
@@ -105,174 +117,211 @@ input {
 </div>
 
 <div class="right">
-    <h3>Cart</h3>
+    <h3>🛒 Cart</h3>
     <div id="cart">No items</div>
     <h4>Total: ₹<span id="total">0</span></h4>
+
     <button onclick="placeOrder()">Place Order</button>
 
     <hr>
 
-    <h3>Orders</h3>
+    <h3>📦 Orders</h3>
     <div id="orders"></div>
 </div>
 
 </div>
-</div>
 
 <script>
 
-let user = localStorage.getItem("user");
-
-if(user){
-    document.getElementById("loginPage").style.display="none";
-    document.getElementById("app").style.display="block";
-    document.getElementById("user").innerText=user;
+/* THEME */
+function toggleTheme(){
+    document.body.classList.toggle("light");
 }
 
-function login(){
-    let name=document.getElementById("username").value;
-    localStorage.setItem("user",name);
-    location.reload();
-}
+/* FILTER */
+let currentCategory = "All";
 
 /* DATA */
-const restaurants=[
-{
-name:"Pizza Hub",
-menu:[
-{name:"Margherita",price:200},
-{name:"Pepperoni",price:250}
-]
-},
-{
-name:"Burger Palace",
-menu:[
-{name:"Veg Burger",price:100},
-{name:"Chicken Burger",price:150}
-]
-}
+const restaurants = [
+{ name:"Pizza Hub", category:"Pizza", menu:[
+{name:"Margherita",price:200},{name:"Pepperoni",price:250},{name:"Farmhouse",price:280},{name:"Cheese Burst",price:300}
+]},
+{ name:"Burger Palace", category:"Burger", menu:[
+{name:"Veg Burger",price:100},{name:"Chicken Burger",price:150},{name:"Double Patty",price:180},{name:"Cheese Burger",price:160}
+]},
+{ name:"Indian Kitchen", category:"Indian", menu:[
+{name:"Biryani",price:250},{name:"Paneer Butter Masala",price:220},{name:"Dal Tadka",price:150},{name:"Butter Naan",price:40}
+]},
+{ name:"Chinese Wok", category:"Chinese", menu:[
+{name:"Hakka Noodles",price:180},{name:"Manchurian",price:170},{name:"Fried Rice",price:160},{name:"Spring Rolls",price:140}
+]},
+{ name:"Cafe Delight", category:"Cafe", menu:[
+{name:"Cold Coffee",price:120},{name:"Brownie",price:150},{name:"Pasta",price:180},{name:"Sandwich",price:130}
+]},
+{ name:"Dessert House", category:"Dessert", menu:[
+{name:"Ice Cream",price:90},{name:"Chocolate Cake",price:180},{name:"Donut",price:80},{name:"Milkshake",price:140}
+]}
 ];
 
-let cart={};
+let cart = {};
 
-/* LOAD */
+/* LOAD RESTAURANTS */
 function loadRestaurants(){
-let div=document.getElementById("restaurants");
-div.innerHTML="<h2>Restaurants</h2>";
+    let div=document.getElementById("restaurants");
+    let search=document.getElementById("search").value.toLowerCase();
 
-restaurants.forEach((r,i)=>{
-div.innerHTML+=`
-<div class="card" onclick="openMenu(${i})">
-${r.name}
-</div>`;
-});
+    div.innerHTML="";
+
+    restaurants.forEach((r,i)=>{
+        if(currentCategory !== "All" && r.category !== currentCategory) return;
+        if(!r.name.toLowerCase().includes(search)) return;
+
+        div.innerHTML+=`
+        <div class="card" onclick="openMenu(${i})">
+        <b>${r.name}</b><br>
+        ${r.category} • ⭐ 4.${Math.floor(Math.random()*9)} • 25 mins
+        </div>`;
+    });
 }
 
+/* FILTER */
+function setCategory(cat){
+    currentCategory = cat;
+    loadRestaurants();
+}
+
+function filterRestaurants(){
+    loadRestaurants();
+}
+
+/* MENU */
 function openMenu(i){
-document.getElementById("restaurants").style.display="none";
-document.getElementById("menuSection").style.display="block";
+    document.querySelectorAll(".left")[0].style.display="none";
+    document.getElementById("menuSection").style.display="block";
 
-let r=restaurants[i];
-document.getElementById("resName").innerText=r.name;
+    let r=restaurants[i];
+    document.getElementById("resName").innerText=r.name;
 
-let m=document.getElementById("menu");
-m.innerHTML="";
+    let m=document.getElementById("menu");
+    m.innerHTML="";
 
-r.menu.forEach(item=>{
-m.innerHTML+=`
-<div class="card">
-${item.name} - ₹${item.price}
-<button onclick="add('${item.name}',${item.price})">Add</button>
-</div>`;
-});
+    r.menu.forEach(item=>{
+        m.innerHTML+=`
+        <div class="card">
+        ${item.name} - ₹${item.price}
+        <button onclick="add('${item.name}',${item.price})">Add</button>
+        </div>`;
+    });
 }
 
 function back(){
-document.getElementById("restaurants").style.display="block";
-document.getElementById("menuSection").style.display="none";
+    document.querySelectorAll(".left")[0].style.display="block";
+    document.getElementById("menuSection").style.display="none";
 }
 
+/* CART */
 function add(name,price){
-if(!cart[name]) cart[name]={qty:0,price};
-cart[name].qty++;
-updateCart();
+    if(!cart[name]) cart[name]={qty:0,price};
+    cart[name].qty++;
+    updateCart();
+}
+
+function remove(name){
+    cart[name].qty--;
+    if(cart[name].qty<=0) delete cart[name];
+    updateCart();
 }
 
 function updateCart(){
-let div=document.getElementById("cart");
-div.innerHTML="";
-let total=0;
+    let div=document.getElementById("cart");
+    div.innerHTML="";
+    let total=0;
 
-for(let i in cart){
-div.innerHTML+=`${i} x ${cart[i].qty}<br>`;
-total+=cart[i].qty*cart[i].price;
+    for(let i in cart){
+        div.innerHTML+=`
+        ${i} x ${cart[i].qty}
+        <button onclick="add('${i}',${cart[i].price})">+</button>
+        <button onclick="remove('${i}')">-</button><br>`;
+        total+=cart[i].qty*cart[i].price;
+    }
+
+    document.getElementById("total").innerText=total;
+
+    if(Object.keys(cart).length===0) div.innerHTML="No items";
 }
 
-document.getElementById("total").innerText=total;
-if(Object.keys(cart).length===0) div.innerHTML="No items";
-}
-
+/* ORDER */
 function placeOrder(){
-if(Object.keys(cart).length===0){
-alert("Cart empty");
-return;
+    if(Object.keys(cart).length===0){
+        alert("Cart empty");
+        return;
+    }
+
+    let total=document.getElementById("total").innerText;
+
+    let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+
+    orders.push({
+        items:{...cart},
+        total,
+        status:"Preparing"
+    });
+
+    localStorage.setItem("orders",JSON.stringify(orders));
+
+    cart={};
+    updateCart();
+    loadOrders();
+
+    simulateStatus(orders.length-1);
+
+    alert("Order placed!");
 }
 
-let total=document.getElementById("total").innerText;
-
-let orders=JSON.parse(localStorage.getItem("orders")||"[]");
-
-let order={
-total,
-status:"Preparing"
-};
-
-orders.push(order);
-localStorage.setItem("orders",JSON.stringify(orders));
-
-cart={};
-updateCart();
-loadOrders();
-
-simulateStatus(orders.length-1);
-
-alert("Order placed!");
-}
-
+/* STATUS */
 function simulateStatus(index){
-setTimeout(()=>{
-let orders=JSON.parse(localStorage.getItem("orders"));
-orders[index].status="Delivered";
-localStorage.setItem("orders",JSON.stringify(orders));
-loadOrders();
-},5000);
+    setTimeout(()=>{
+        let orders=JSON.parse(localStorage.getItem("orders"));
+        orders[index].status="Out for Delivery";
+        localStorage.setItem("orders",JSON.stringify(orders));
+        loadOrders();
+    },3000);
+
+    setTimeout(()=>{
+        let orders=JSON.parse(localStorage.getItem("orders"));
+        orders[index].status="Delivered";
+        localStorage.setItem("orders",JSON.stringify(orders));
+        loadOrders();
+    },6000);
 }
 
+/* ORDERS */
 function loadOrders(){
-let div=document.getElementById("orders");
-let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+    let div=document.getElementById("orders");
+    let orders=JSON.parse(localStorage.getItem("orders")||"[]");
 
-div.innerHTML="";
+    div.innerHTML="";
 
-orders.forEach((o,i)=>{
-div.innerHTML+=`
-<div class="card">
-Order ₹${o.total}<br>
-<span class="${o.status==='Delivered'?'delivered':'preparing'}">
-${o.status}
-</span>
-<br>
-<button onclick="reorder(${i})">Reorder</button>
-</div>`;
-});
+    orders.forEach((o,i)=>{
+        div.innerHTML+=`
+        <div class="card">
+        Order ₹${o.total}<br>
+        <span class="${o.status==='Delivered'?'delivered':(o.status==='Out for Delivery'?'out':'preparing')}">
+        ${o.status}
+        </span><br>
+        <button onclick="reorder(${i})">Reorder</button>
+        </div>`;
+    });
 }
 
+/* REORDER */
 function reorder(i){
-let orders=JSON.parse(localStorage.getItem("orders"));
-cart={"Reorder Item":{qty:1,price:orders[i].total}};
-updateCart();
+    let orders=JSON.parse(localStorage.getItem("orders"));
+    cart={...orders[i].items};
+    updateCart();
 }
 
+/* INIT */
 loadRestaurants();
 loadOrders();
 
