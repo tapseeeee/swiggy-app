@@ -1,360 +1,282 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>QuickBite Pro - Food Delivery</title>
+<title>QuickBite Pro+</title>
 
 <style>
-:root {
-    --primary: #fc8019;
-    --bg: #f5f5f5;
-    --card-bg: white;
-    --text: #333;
-    --shadow: rgba(0,0,0,0.1);
-}
-
-[data-theme="dark"] {
-    --primary: #ff9f43;
-    --bg: #121212;
-    --card-bg: #1e1e1e;
-    --text: #e0e0e0;
-    --shadow: rgba(0,0,0,0.5);
-}
-
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); color: var(--text); transition: 0.3s; }
-
-header {
-    background: var(--primary);
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg,#0f0f0f,#1c1c1c);
     color: white;
-    padding: 15px 25px;
-    font-size: 22px;
+}
+
+/* HEADER */
+header {
+    background: #fc8019;
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
+}
+
+/* LOGIN */
+.login {
+    display: flex;
+    justify-content: center;
     align-items: center;
+    height: 100vh;
 }
 
-.container { display: flex; min-height: 100vh; }
-
-.restaurants, .menu { width: 70%; padding: 20px; }
-
-.cart {
-    width: 30%;
-    background: var(--card-bg);
-    padding: 20px;
-    border-left: 1px solid var(--shadow);
+.login-box {
+    background: #1e1e1e;
+    padding: 30px;
+    border-radius: 10px;
 }
 
+/* LAYOUT */
+.container { display: flex; }
+
+.left { width: 70%; padding: 20px; }
+.right { width: 30%; padding: 20px; background:#1a1a1a; }
+
+/* CARD */
 .card {
-    background: var(--card-bg);
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px var(--shadow);
-    cursor: pointer;
-    transition: transform 0.2s;
+    background:#222;
+    padding:15px;
+    margin:10px 0;
+    border-radius:10px;
+    cursor:pointer;
 }
 
-.card:hover { transform: translateY(-3px); }
+.card:hover { background:#2a2a2a; }
 
-.badge {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 5px;
-    text-transform: uppercase;
-}
-.veg { border: 1px solid green; color: green; }
-.non-veg { border: 1px solid red; color: red; }
-
+/* BUTTON */
 button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
+    background:#fc8019;
+    border:none;
+    padding:6px 10px;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
 }
 
-button:disabled { background: #ccc; cursor: not-allowed; }
-
-.loader {
-    display: none;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid var(--primary);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 1s linear infinite;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 10px;
-}
-
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-.eta-timer { color: var(--primary); font-weight: bold; font-size: 0.9em; }
-
+/* INPUT */
 input {
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    margin: 5px 0;
-    width: 100%;
-    box-sizing: border-box;
+    padding:8px;
+    margin:5px;
+    border-radius:5px;
+    border:none;
 }
+
+/* STATUS COLORS */
+.preparing { color:orange; }
+.delivered { color:lightgreen; }
+
 </style>
 </head>
 
-<body data-theme="light">
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" class="login">
+    <div class="login-box">
+        <h2>Login</h2>
+        <input id="username" placeholder="Enter Name"><br>
+        <button onclick="login()">Enter App</button>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
 
 <header>
-    <span>🍔 QuickBite Pro</span>
-    <button onclick="toggleTheme()" style="background: rgba(255,255,255,0.2)">🌓 Mode</button>
+    <span>🍔 QuickBite Pro+</span>
+    <span id="user"></span>
 </header>
 
 <div class="container">
 
-<div class="restaurants" id="restaurantsSection">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-        <h2>Restaurants</h2>
-        <div style="display:flex; gap:10px;">
-            <label><input type="checkbox" id="vegFilter" onchange="loadRestaurants()"> Veg Only</label>
-        </div>
-    </div>
-    <div id="restaurants"></div>
-</div>
+<div class="left" id="restaurants"></div>
 
-<div class="menu" id="menuSection" style="display:none;">
+<div class="left" id="menuSection" style="display:none;">
     <h2 id="resName"></h2>
     <button onclick="back()">⬅ Back</button>
-    <div id="menu" style="margin-top:20px;"></div>
+    <div id="menu"></div>
 </div>
 
-<div class="cart">
-    <h3>🛒 Your Cart</h3>
-    <div id="cartItems">No items</div>
-    <div style="margin-top:15px;">
-        <input type="text" id="couponCode" placeholder="Enter Coupon (e.g. BITE10)">
-        <button onclick="applyCoupon()" style="width:100%">Apply Coupon</button>
-    </div>
-    <h4 style="margin-top:20px;">Total: ₹<span id="total">0</span> <small id="discountInfo" style="color:green"></small></h4>
-
-    <button onclick="placeOrder()" id="orderBtn" style="width:100%; padding:12px;">Place Order <div id="btnLoader" class="loader" style="display:none;"></div></button>
-    <button onclick="clearCart()" style="background:#666; margin-top:10px; width:100%">Clear Cart</button>
+<div class="right">
+    <h3>Cart</h3>
+    <div id="cart">No items</div>
+    <h4>Total: ₹<span id="total">0</span></h4>
+    <button onclick="placeOrder()">Place Order</button>
 
     <hr>
-    <h3>📦 Orders & Tracking</h3>
-    <div id="history">No orders yet</div>
+
+    <h3>Orders</h3>
+    <div id="orders"></div>
 </div>
 
+</div>
 </div>
 
 <script>
-const restaurants = [
-    { name: "Pizza Hub", vegOnly: false, menu: [
-        {name:"Margherita",price:200, isVeg: true},{name:"Pepperoni",price:250, isVeg: false}
-    ]},
-    { name: "Pure Veg Delight", vegOnly: true, menu: [
-        {name:"Paneer Tikka",price:220, isVeg: true},{name:"Dal Makhani",price:180, isVeg: true}
-    ]},
-    { name: "Burger Palace", vegOnly: false, menu: [
-        {name:"Veg Burger",price:100, isVeg: true},{name:"Chicken Burger",price:150, isVeg: false}
-    ]}
+
+let user = localStorage.getItem("user");
+
+if(user){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("app").style.display="block";
+    document.getElementById("user").innerText=user;
+}
+
+function login(){
+    let name=document.getElementById("username").value;
+    localStorage.setItem("user",name);
+    location.reload();
+}
+
+/* DATA */
+const restaurants=[
+{
+name:"Pizza Hub",
+menu:[
+{name:"Margherita",price:200},
+{name:"Pepperoni",price:250}
+]
+},
+{
+name:"Burger Palace",
+menu:[
+{name:"Veg Burger",price:100},
+{name:"Chicken Burger",price:150}
+]
+}
 ];
 
-let cart = {};
-let activeDiscount = 0;
+let cart={};
 
-function toggleTheme() {
-    const body = document.body;
-    body.dataset.theme = body.dataset.theme === "light" ? "dark" : "light";
-}
-
+/* LOAD */
 function loadRestaurants(){
-    const showVegOnly = document.getElementById("vegFilter").checked;
-    let div = document.getElementById("restaurants");
-    div.innerHTML = "";
+let div=document.getElementById("restaurants");
+div.innerHTML="<h2>Restaurants</h2>";
 
-    restaurants.forEach((r,i)=>{
-        if(showVegOnly && !r.vegOnly) return;
-        div.innerHTML += `
-        <div class="card" onclick="openRestaurant(${i})">
-            <div style="display:flex; justify-content:space-between">
-                <b>${r.name}</b>
-                <span style="color:#ffb400">★ 4.${Math.floor(Math.random()*9)}</span>
-            </div>
-            <div style="margin-top:5px;">
-                ${r.vegOnly ? '<span class="badge veg">Pure Veg</span>' : '<span class="badge non-veg">Veg & Non-Veg</span>'}
-                <small>• 25-30 mins</small>
-            </div>
-        </div>`;
-    });
+restaurants.forEach((r,i)=>{
+div.innerHTML+=`
+<div class="card" onclick="openMenu(${i})">
+${r.name}
+</div>`;
+});
 }
 
-function openRestaurant(index){
-    document.getElementById("restaurantsSection").style.display="none";
-    document.getElementById("menuSection").style.display="block";
+function openMenu(i){
+document.getElementById("restaurants").style.display="none";
+document.getElementById("menuSection").style.display="block";
 
-    let res = restaurants[index];
-    document.getElementById("resName").innerText = res.name;
+let r=restaurants[i];
+document.getElementById("resName").innerText=r.name;
 
-    let menuDiv = document.getElementById("menu");
-    menuDiv.innerHTML = "";
+let m=document.getElementById("menu");
+m.innerHTML="";
 
-    res.menu.forEach(item=>{
-        menuDiv.innerHTML += `
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center; cursor:default;">
-            <div>
-                <span class="badge ${item.isVeg ? 'veg' : 'non-veg'}">${item.isVeg ? 'V' : 'NV'}</span>
-                <b>${item.name}</b><br>
-                ₹${item.price}
-            </div>
-            <button onclick="add('${item.name}',${item.price})">Add +</button>
-        </div>`;
-    });
+r.menu.forEach(item=>{
+m.innerHTML+=`
+<div class="card">
+${item.name} - ₹${item.price}
+<button onclick="add('${item.name}',${item.price})">Add</button>
+</div>`;
+});
 }
 
 function back(){
-    document.getElementById("restaurantsSection").style.display="block";
-    document.getElementById("menuSection").style.display="none";
+document.getElementById("restaurants").style.display="block";
+document.getElementById("menuSection").style.display="none";
 }
 
 function add(name,price){
-    if(!cart[name]) cart[name]={qty:0,price};
-    cart[name].qty++;
-    updateCart();
-}
-
-function remove(name){
-    cart[name].qty--;
-    if(cart[name].qty<=0) delete cart[name];
-    updateCart();
-}
-
-function applyCoupon() {
-    const code = document.getElementById("couponCode").value.toUpperCase();
-    if(code === "BITE10") {
-        activeDiscount = 0.10;
-        alert("10% Discount Applied!");
-    } else {
-        activeDiscount = 0;
-        alert("Invalid Coupon");
-    }
-    updateCart();
+if(!cart[name]) cart[name]={qty:0,price};
+cart[name].qty++;
+updateCart();
 }
 
 function updateCart(){
-    let div=document.getElementById("cartItems");
-    div.innerHTML="";
-    let subtotal=0;
+let div=document.getElementById("cart");
+div.innerHTML="";
+let total=0;
 
-    for(let item in cart){
-        div.innerHTML+=`
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span>${item} x ${cart[item].qty}</span>
-            <div>
-                <button onclick="remove('${item}')" style="padding:2px 8px">-</button>
-                <button onclick="add('${item}',${cart[item].price})" style="padding:2px 8px">+</button>
-            </div>
-        </div>`;
-        subtotal+=cart[item].qty*cart[item].price;
-    }
+for(let i in cart){
+div.innerHTML+=`${i} x ${cart[i].qty}<br>`;
+total+=cart[i].qty*cart[i].price;
+}
 
-    let discountAmount = subtotal * activeDiscount;
-    let finalTotal = subtotal - discountAmount;
-
-    document.getElementById("total").innerText = finalTotal.toFixed(2);
-    document.getElementById("discountInfo").innerText = activeDiscount > 0 ? `(-₹${discountAmount.toFixed(2)})` : "";
-    if(Object.keys(cart).length===0) div.innerHTML="No items";
+document.getElementById("total").innerText=total;
+if(Object.keys(cart).length===0) div.innerHTML="No items";
 }
 
 function placeOrder(){
-    if(Object.keys(cart).length===0){ alert("Cart empty"); return; }
-
-    // Loading State
-    const btn = document.getElementById("orderBtn");
-    const loader = document.getElementById("btnLoader");
-    btn.disabled = true;
-    loader.style.display = "inline-block";
-
-    setTimeout(() => {
-        let total = document.getElementById("total").innerText;
-        let orders = JSON.parse(localStorage.getItem("orders_v2") || "[]");
-        let newOrder = { 
-            id: Date.now(),
-            total, 
-            status: "Confirmed", 
-            eta: 30,
-            rating: 0
-        };
-        orders.unshift(newOrder);
-        localStorage.setItem("orders_v2", JSON.stringify(orders));
-        
-        // Reset
-        btn.disabled = false;
-        loader.style.display = "none";
-        cart = {};
-        activeDiscount = 0;
-        document.getElementById("couponCode").value = "";
-        updateCart();
-        updateHistory();
-        startETACountdown(newOrder.id);
-        alert("Order placed successfully!");
-    }, 1500);
+if(Object.keys(cart).length===0){
+alert("Cart empty");
+return;
 }
 
-function updateHistory(){
-    let orders=JSON.parse(localStorage.getItem("orders_v2")||"[]");
-    let div=document.getElementById("history");
-    div.innerHTML="";
+let total=document.getElementById("total").innerText;
 
-    orders.forEach((o)=>{
-        div.innerHTML+=`
-        <div class="card" style="font-size:0.9em; cursor:default;">
-            <div style="display:flex; justify-content:space-between">
-                <b>Order #${o.id.toString().slice(-4)}</b>
-                <span id="stat-${o.id}" style="color:var(--primary)">${o.status}</span>
-            </div>
-            <div>Total: ₹${o.total}</div>
-            <div class="eta-timer" id="eta-${o.id}">${o.eta > 0 ? 'ETA: ' + o.eta + ' mins' : 'Delivered'}</div>
-            <div id="rate-${o.id}" style="margin-top:5px;">
-                ${o.rating > 0 ? 'Rating: ' + '⭐'.repeat(o.rating) : `<button onclick="rateOrder(${o.id}, 5)" style="padding:2px 5px; font-size:10px;">Rate 5★</button>`}
-            </div>
-        </div>`;
-    });
+let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+
+let order={
+total,
+status:"Preparing"
+};
+
+orders.push(order);
+localStorage.setItem("orders",JSON.stringify(orders));
+
+cart={};
+updateCart();
+loadOrders();
+
+simulateStatus(orders.length-1);
+
+alert("Order placed!");
 }
 
-function startETACountdown(orderId) {
-    let timer = setInterval(() => {
-        let orders = JSON.parse(localStorage.getItem("orders_v2"));
-        let idx = orders.findIndex(o => o.id === orderId);
-        if(idx === -1) return clearInterval(timer);
-
-        if(orders[idx].eta > 0) {
-            orders[idx].eta -= 1;
-            if(orders[idx].eta <= 20) orders[idx].status = "Preparing";
-            if(orders[idx].eta <= 10) orders[idx].status = "Out for Delivery";
-            if(orders[idx].eta <= 0) orders[idx].status = "Delivered";
-            
-            localStorage.setItem("orders_v2", JSON.stringify(orders));
-            updateHistory();
-        } else {
-            clearInterval(timer);
-        }
-    }, 5000); // Fast countdown for demo (5s = 1 min)
+function simulateStatus(index){
+setTimeout(()=>{
+let orders=JSON.parse(localStorage.getItem("orders"));
+orders[index].status="Delivered";
+localStorage.setItem("orders",JSON.stringify(orders));
+loadOrders();
+},5000);
 }
 
-function rateOrder(id, score) {
-    let orders = JSON.parse(localStorage.getItem("orders_v2"));
-    let idx = orders.findIndex(o => o.id === id);
-    orders[idx].rating = score;
-    localStorage.setItem("orders_v2", JSON.stringify(orders));
-    updateHistory();
+function loadOrders(){
+let div=document.getElementById("orders");
+let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+
+div.innerHTML="";
+
+orders.forEach((o,i)=>{
+div.innerHTML+=`
+<div class="card">
+Order ₹${o.total}<br>
+<span class="${o.status==='Delivered'?'delivered':'preparing'}">
+${o.status}
+</span>
+<br>
+<button onclick="reorder(${i})">Reorder</button>
+</div>`;
+});
 }
 
-function clearCart() { cart = {}; updateCart(); }
+function reorder(i){
+let orders=JSON.parse(localStorage.getItem("orders"));
+cart={"Reorder Item":{qty:1,price:orders[i].total}};
+updateCart();
+}
 
 loadRestaurants();
-updateHistory();
+loadOrders();
+
 </script>
+
 </body>
 </html>
