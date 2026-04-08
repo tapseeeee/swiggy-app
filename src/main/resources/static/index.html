@@ -4,11 +4,7 @@
 <title>QuickBite - Food Delivery</title>
 
 <style>
-body {
-    font-family: Arial;
-    margin: 0;
-    background: #f5f5f5;
-}
+body { font-family: Arial; margin: 0; background: #f5f5f5; }
 
 header {
     background: #fc8019;
@@ -17,9 +13,7 @@ header {
     font-size: 22px;
 }
 
-.container {
-    display: flex;
-}
+.container { display: flex; }
 
 .restaurants, .menu {
     width: 70%;
@@ -31,10 +25,9 @@ header {
     background: white;
     padding: 20px;
     height: 100vh;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    overflow-y: auto;
 }
 
-/* CARD */
 .card {
     background: white;
     padding: 15px;
@@ -44,9 +37,7 @@ header {
     cursor: pointer;
 }
 
-.card:hover {
-    background: #fff5ec;
-}
+.card:hover { background: #fff5ec; }
 
 button {
     background: #fc8019;
@@ -58,7 +49,6 @@ button {
     margin: 3px;
 }
 
-/* MENU ITEM */
 .item {
     display: flex;
     justify-content: space-between;
@@ -73,86 +63,68 @@ button {
 
 <div class="container">
 
-<!-- RESTAURANTS -->
 <div class="restaurants" id="restaurants"></div>
 
-<!-- MENU -->
 <div class="menu" id="menuSection" style="display:none;">
     <h2 id="resName"></h2>
     <button onclick="back()">⬅ Back</button>
     <div id="menu"></div>
 </div>
 
-<!-- CART -->
 <div class="cart">
     <h3>🛒 Cart</h3>
     <div id="cartItems">No items</div>
     <h4>Total: ₹<span id="total">0</span></h4>
+
     <button onclick="clearCart()">Clear</button>
     <button onclick="placeOrder()">Place Order</button>
+
+    <hr>
+
+    <h3>📦 Order History</h3>
+    <div id="history">No orders yet</div>
+
+    <hr>
+
+    <h3>📊 Analytics</h3>
+    <p>Total Orders: <span id="ordersCount">0</span></p>
+    <p>Total Revenue: ₹<span id="revenue">0</span></p>
 </div>
 
 </div>
 
 <script>
 
-/* RESTAURANTS DATA */
 const restaurants = [
-{
-    name: "Pizza Hub",
-    menu: [
-        {name: "Margherita", price: 200},
-        {name: "Pepperoni", price: 250},
-        {name: "Cheese Burst", price: 300},
-        {name: "Farmhouse", price: 280}
-    ]
-},
-{
-    name: "Burger Palace",
-    menu: [
-        {name: "Veg Burger", price: 100},
-        {name: "Chicken Burger", price: 150},
-        {name: "Double Patty", price: 180},
-        {name: "Cheese Burger", price: 160}
-    ]
-},
-{
-    name: "Snack Corner",
-    menu: [
-        {name: "Fries", price: 80},
-        {name: "Loaded Fries", price: 120},
-        {name: "Nachos", price: 140}
-    ]
-},
-{
-    name: "Indian Kitchen",
-    menu: [
-        {name: "Biryani", price: 250},
-        {name: "Paneer Butter Masala", price: 220},
-        {name: "Dal Tadka", price: 150},
-        {name: "Roti Combo", price: 100}
-    ]
-}
+{ name: "Pizza Hub", menu: [
+    {name:"Margherita",price:200},{name:"Pepperoni",price:250},{name:"Cheese Burst",price:300},{name:"Farmhouse",price:280}
+]},
+{ name: "Burger Palace", menu: [
+    {name:"Veg Burger",price:100},{name:"Chicken Burger",price:150},{name:"Double Patty",price:180},{name:"Cheese Burger",price:160}
+]},
+{ name: "Snack Corner", menu: [
+    {name:"Fries",price:80},{name:"Loaded Fries",price:120},{name:"Nachos",price:140}
+]},
+{ name: "Indian Kitchen", menu: [
+    {name:"Biryani",price:250},{name:"Paneer Butter Masala",price:220},{name:"Dal Tadka",price:150},{name:"Roti Combo",price:100}
+]}
 ];
 
 let cart = {};
 
-/* LOAD RESTAURANTS */
 function loadRestaurants(){
     let div = document.getElementById("restaurants");
     div.innerHTML = "<h2>Restaurants</h2>";
 
-    restaurants.forEach((r, i)=>{
+    restaurants.forEach((r,i)=>{
         div.innerHTML += `
-            <div class="card" onclick="openRestaurant(${i})">
-                <b>${r.name}</b><br>
-                ⭐ 4.${Math.floor(Math.random()*9)} | ⏱ 25 mins
-            </div>
-        `;
+        <div class="card" onclick="openRestaurant(${i})">
+            <b>${r.name}</b><br>
+            ⭐ 4.${Math.floor(Math.random()*9)} | ⏱ 25 mins
+        </div>`;
     });
 }
 
-/* OPEN MENU */
 function openRestaurant(index){
     document.getElementById("restaurants").style.display="none";
     document.getElementById("menuSection").style.display="block";
@@ -165,23 +137,20 @@ function openRestaurant(index){
 
     res.menu.forEach(item=>{
         menuDiv.innerHTML += `
-            <div class="item">
-                <span>${item.name} - ₹${item.price}</span>
-                <button onclick="add('${item.name}', ${item.price})">Add</button>
-            </div>
-        `;
+        <div class="item">
+            <span>${item.name} - ₹${item.price}</span>
+            <button onclick="add('${item.name}',${item.price})">Add</button>
+        </div>`;
     });
 }
 
-/* BACK */
 function back(){
     document.getElementById("restaurants").style.display="block";
     document.getElementById("menuSection").style.display="none";
 }
 
-/* CART */
-function add(name, price){
-    if(!cart[name]) cart[name]={qty:0, price:price};
+function add(name,price){
+    if(!cart[name]) cart[name]={qty:0,price};
     cart[name].qty++;
     updateCart();
 }
@@ -192,50 +161,95 @@ function remove(name){
     updateCart();
 }
 
-function clearCart(){
-    cart = {};
-    updateCart();
-}
+function clearCart(){ cart={}; updateCart(); }
 
 function updateCart(){
-    let div = document.getElementById("cartItems");
-    div.innerHTML = "";
-    let total = 0;
+    let div=document.getElementById("cartItems");
+    div.innerHTML="";
+    let total=0;
 
-    if(Object.keys(cart).length === 0){
-        div.innerHTML = "No items";
-    }
+    if(Object.keys(cart).length===0) div.innerHTML="No items";
 
     for(let item in cart){
-        div.innerHTML += `
-            ${item} x ${cart[item].qty}
-            <button onclick="add('${item}', ${cart[item].price})">+</button>
-            <button onclick="remove('${item}')">-</button>
-            <br>
-        `;
-        total += cart[item].qty * cart[item].price;
+        div.innerHTML+=`
+        ${item} x ${cart[item].qty}
+        <button onclick="add('${item}',${cart[item].price})">+</button>
+        <button onclick="remove('${item}')">-</button><br>`;
+        total+=cart[item].qty*cart[item].price;
     }
 
-    document.getElementById("total").innerText = total;
+    document.getElementById("total").innerText=total;
 }
 
-/* PLACE ORDER */
 function placeOrder(){
-    if(Object.keys(cart).length === 0){
-        alert("Cart is empty");
-        return;
-    }
+    if(Object.keys(cart).length===0){ alert("Cart empty"); return; }
 
-    fetch("/food/order",{method:"POST"})
-    .then(()=>{
-        alert("Order placed successfully!");
-        cart = {};
-        updateCart();
+    let total=0;
+    for(let i in cart) total+=cart[i].qty*cart[i].price;
+
+    let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+
+    let newOrder={ items:{...cart}, total, status:"Order Placed" };
+    orders.push(newOrder);
+    localStorage.setItem("orders",JSON.stringify(orders));
+
+    updateHistory();
+    updateAnalytics();
+    simulateStatus(orders.length-1);
+
+    alert("Order placed!");
+    cart={}; updateCart();
+}
+
+function updateHistory(){
+    let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+    let div=document.getElementById("history");
+    div.innerHTML="";
+
+    if(orders.length===0){ div.innerHTML="No orders yet"; return; }
+
+    orders.forEach((o,index)=>{
+        div.innerHTML+=`
+        <div>
+            Order ${index+1} - ₹${o.total}<br>
+            Status: <span id="status${index}">${o.status}</span><br>
+            <button onclick="reorder(${index})">Reorder</button>
+            <hr>
+        </div>`;
     });
 }
 
-/* INIT */
+function simulateStatus(index){
+    let statuses=["Preparing","Out for Delivery","Delivered"];
+    statuses.forEach((s,i)=>{
+        setTimeout(()=>{
+            let orders=JSON.parse(localStorage.getItem("orders"));
+            orders[index].status=s;
+            localStorage.setItem("orders",JSON.stringify(orders));
+            document.getElementById("status"+index).innerText=s;
+        },(i+1)*2000);
+    });
+}
+
+function updateAnalytics(){
+    let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+    let revenue=0;
+    orders.forEach(o=>revenue+=o.total);
+
+    document.getElementById("ordersCount").innerText=orders.length;
+    document.getElementById("revenue").innerText=revenue;
+}
+
+function reorder(index){
+    let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+    cart=JSON.parse(JSON.stringify(orders[index].items));
+    updateCart();
+    alert("Items added to cart!");
+}
+
 loadRestaurants();
+updateHistory();
+updateAnalytics();
 
 </script>
 
